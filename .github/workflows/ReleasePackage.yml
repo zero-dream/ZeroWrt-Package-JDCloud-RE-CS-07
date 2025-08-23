@@ -1,0 +1,112 @@
+# CI 项目
+name: ReleasePackage
+
+# CI 权限
+permissions: write-all
+
+# CI 计划
+on:
+  # 手动运行
+  workflow_dispatch:
+
+# CI 环境
+env:
+  GITHUB_TOKEN: ${{secrets.GITHUB_TOKEN}}
+
+# CI 任务
+jobs:
+  auto_clean:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Delete releases and workflows runs
+        uses: ophub/delete-releases-workflows@main
+        with:
+          gh_token: ${{ secrets.GITHUB_TOKEN }}
+          delete_tags: true
+          delete_releases: true
+          releases_keep_latest: 1
+          releases_keep_keyword: ''
+          delete_workflows: true
+          workflows_keep_day: 7
+          workflows_keep_keyword: ''
+
+  core:
+    runs-on: ubuntu-latest
+    needs: auto_clean  # 依赖的作业
+    steps:
+      - name: Checkout Project
+        uses: actions/checkout@main
+
+      - name: Initialize Environment
+        env:
+          DEBIAN_FRONTEND: noninteractive
+        run: |
+          sudo -E apt -yqq update
+          sudo -E apt -yqq install tar
+
+      - name: Initialize Value
+        run: |
+          echo "ZD_DATE=$(TZ=UTC-8 date +"%y.%m.%d-%H.%M.%S")" >> $GITHUB_ENV
+
+      - name: Initialize Project
+        run: |
+          uploadPath="$GITHUB_WORKSPACE/upload"
+          echo "ZD_UPLOAD_PATH=$uploadPath" >> $GITHUB_ENV
+          mkdir -p "$uploadPath"
+          tempPath="$GITHUB_WORKSPACE/temp"
+          echo "ZD_TEMP_PATH=$tempPath" >> $GITHUB_ENV
+          mkdir -p "$tempPath"
+
+      - name: Release File
+        run: |
+          # 处理不同版本的文件夹
+          packageDir="$GITHUB_WORKSPACE/Package/"
+          cd "$packageDir"
+          for firmwareName in *; do
+            [[ -e "$firmwareName" ]] || continue # 跳过空的匹配
+            # 处理 ZD_UPLOAD_PATH 路径
+            packageUploadPath="$ZD_UPLOAD_PATH/$firmwareName"
+            [[ -d "$packageUploadPath" ]] || mkdir -p "$packageUploadPath"
+            # 处理不同版本的 Package
+            targetDir="$packageDir/$firmwareName/"
+            cd "$targetDir"
+            for item in *; do
+              [[ -e "$item" ]] || continue # 跳过空的匹配
+              archiveName="$packageUploadPath/${item}.tar.gz"
+              tar -czf "$archiveName" "$item"
+            done
+          done
+
+      - name: Upload Release
+        run: |
+          cd "$ZD_UPLOAD_PATH"
+          for firmwareName in *; do
+            # 使用 GitHub CLI 创建 Release
+            tag="ZeroWrt-PACKAGE-IPQ60XX-WiFi_NO-${firmwareName#*-}-$ZD_DATE"
+          notes=$(cat <<- EOF
+            Package download for ZeroWrt (Immortalwrt) firmware
+
+            仅适用于 ZeroWrt-JDCloud-RE-CS-07-${firmwareName#*-} 固件
+
+            源码: https://github.com/zero-dream/immortalwrt.git
+            分支: main
+            提交: f43403c
+
+            配置: IPQ60XX-WiFi_NO
+            平台: QUALCOMMAX
+            内核: 6.12.40
+          EOF
+          )
+            files=("$firmwareName"/*.*)
+            gh release create "$tag" \
+              --title "$tag" \
+              --notes "$notes" \
+              "${files[@]}"
+          done
+
+      - name: Upload Artifact
+        uses: actions/upload-artifact@main
+        with:
+          name: Artifact
+          path: ${{ env.ZD_UPLOAD_PATH }}/*
+          retention-days: 1 # 保留附件天数，最大值为 90 天
