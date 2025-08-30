@@ -16,9 +16,24 @@ env:
 
 jobs:
   auto_clean:
+    if: ${{github.repository}} == 'zero-dream/ZeroWrt-Package-CI'
     runs-on: ubuntu-latest
     steps:
-      - name: Delete releases and workflows runs
-        if: ${{github.repository}} == 'zero-dream/ZeroWrt-Package-CI'
+      - name: Initialize ZeroDream Project
         run: |
-          echo '100000'
+          sudo bash $GITHUB_WORKSPACE/Scripts/InitZeroDreamProject.sh
+
+      - name: Clone Code
+        run: |
+          git clone https://github.com/zero-dream/ZeroWrt-Firmware-CI.git "$ZD_TempPath/ZeroWrt-Firmware-CI/"
+
+      - name: Commit And Push Change
+        run: |
+          git add "$ZD_TempPath/ZeroWrt-Firmware-CI/"
+          # 检查是否有文件变更
+          if git diff-index HEAD --quiet --; then
+            echo "No changes to commit."
+          else
+            git commit -m "AutoUpdate [$(date)]"
+            git push origin HEAD:${{ github.ref }}
+          fi
