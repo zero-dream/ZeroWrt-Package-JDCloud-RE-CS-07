@@ -40,11 +40,12 @@ jobs:
       - name: Clone Code
         run: |
           git clone https://github.com/zero-dream/ZeroWrt-Firmware-CI.git "$ZD_TempPath/ZeroWrt-Firmware-CI/"
+          # 后续的写法，删除$GITHUB_WORKSPACE目录下面的文件，再复制，可以保持100%完整更新
           cp -r "$ZD_TempPath"/ZeroWrt-Firmware-CI/* "$GITHUB_WORKSPACE"
 
       - name: Commit And Push Change
         run: |
-          git add .
+          git add "$GITHUB_WORKSPACE"
           # 检查是否有文件变更
           if git diff-index HEAD --quiet --; then
             echo "No changes to commit."
