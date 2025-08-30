@@ -44,6 +44,8 @@ jobs:
       - name: Commit And Push Change
         run: |
           echo "$GITHUB_WORKSPACE"
+          cd ../
+          ls -la
           # cd "$ZD_TempPath/ZeroWrt-Firmware-CI/"
           # git add .
           # # 检查是否有文件变更
