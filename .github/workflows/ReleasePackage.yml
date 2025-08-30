@@ -50,12 +50,18 @@ jobs:
 
       - name: Initialize Project
         run: |
-          uploadPath="$GITHUB_WORKSPACE/upload"
-          echo "ZD_UPLOAD_PATH=$uploadPath" >> $GITHUB_ENV
+          # ZD_UploadReleasePath
+          uploadPath="$GITHUB_WORKSPACE/upload-release"
           mkdir -p "$uploadPath"
+          echo "ZD_UploadReleasePath=$uploadPath" >> $GITHUB_ENV
+          # ZD_UploadArtifactPath
+          artifactPath="$GITHUB_WORKSPACE/upload-artifact"
+          mkdir -p "$artifactPath"
+          echo "ZD_UploadArtifactPath=$artifactPath" >> $GITHUB_ENV
+          # ZD_TempPath
           tempPath="$GITHUB_WORKSPACE/temp"
-          echo "ZD_TEMP_PATH=$tempPath" >> $GITHUB_ENV
           mkdir -p "$tempPath"
+          echo "ZD_TempPath=$tempPath" >> $GITHUB_ENV
 
       - name: Release File
         run: |
@@ -64,8 +70,8 @@ jobs:
           cd "$packageDir"
           for firmwareName in *; do
             [[ -e "$firmwareName" ]] || continue # 跳过空的匹配
-            # 处理 ZD_UPLOAD_PATH 路径
-            packageUploadPath="$ZD_UPLOAD_PATH/$firmwareName"
+            # 处理 ZD_UploadReleasePath 路径
+            packageUploadPath="$ZD_UploadReleasePath/$firmwareName"
             [[ -d "$packageUploadPath" ]] || mkdir -p "$packageUploadPath"
             # 处理不同版本的 Package
             targetDir="$packageDir/$firmwareName/"
@@ -79,7 +85,7 @@ jobs:
 
       - name: Upload Release
         run: |
-          cd "$ZD_UPLOAD_PATH"
+          cd "$ZD_UploadReleasePath"
           for firmwareName in *; do
             # 使用 GitHub CLI 创建 Release
             tag="ZeroWrt-PACKAGE-IPQ60XX-WiFi_NO-${firmwareName#*-}-$ZD_DATE"
@@ -108,5 +114,5 @@ jobs:
         uses: actions/upload-artifact@main
         with:
           name: Artifact
-          path: ${{ env.ZD_UPLOAD_PATH }}/*
+          path: ${{ env.ZD_UploadReleasePath }}/*
           retention-days: 1 # 保留附件天数，最大值为 90 天
