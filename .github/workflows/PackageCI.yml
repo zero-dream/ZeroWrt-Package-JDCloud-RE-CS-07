@@ -15,7 +15,8 @@ env:
   GITHUB_TOKEN: ${{secrets.GITHUB_TOKEN}}
 
 jobs:
-  auto_clean:
+  package_ci:
+    name: PackageCI
     if: ${{github.repository}} == 'zero-dream/ZeroWrt-Package-CI'
     runs-on: ubuntu-latest
     steps:
@@ -24,7 +25,7 @@ jobs:
 
       - name: Initialize ZeroDream Project
         run: |
-          sudo bash $GITHUB_WORKSPACE/Scripts/InitZeroDreamProject.sh
+          source $GITHUB_WORKSPACE/Scripts/InitZeroDreamProject.sh
 
       - name: Clone Code
         run: |
