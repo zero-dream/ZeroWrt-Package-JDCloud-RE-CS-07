@@ -1,9 +1,12 @@
 # 项目 zero-dream/ZeroWrt-Package-CI 专用
 
+# CI 项目
 name: PackageCI
 
+# CI 权限
 permissions: write-all
 
+# CI 计划
 on:
   # 自动运行: 每天早上 3 点
   schedule:
@@ -11,9 +14,11 @@ on:
   # 手动运行
   workflow_dispatch:
 
+# CI 环境
 env:
   GITHUB_TOKEN: ${{secrets.GITHUB_TOKEN}}
 
+# CI 任务
 jobs:
   package_ci:
     name: PackageCI
