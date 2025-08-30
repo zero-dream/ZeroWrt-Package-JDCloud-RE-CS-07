@@ -19,6 +19,9 @@ jobs:
     if: ${{github.repository}} == 'zero-dream/ZeroWrt-Package-CI'
     runs-on: ubuntu-latest
     steps:
+      - name: Checkout Project
+        uses: actions/checkout@main
+
       - name: Initialize ZeroDream Project
         run: |
           sudo bash $GITHUB_WORKSPACE/Scripts/InitZeroDreamProject.sh
@@ -35,5 +38,5 @@ jobs:
             echo "No changes to commit."
           else
             git commit -m "AutoUpdate [$(date)]"
-            git push origin HEAD:${{ github.ref }}
+            git push origin HEAD:${{github.ref}}
           fi
