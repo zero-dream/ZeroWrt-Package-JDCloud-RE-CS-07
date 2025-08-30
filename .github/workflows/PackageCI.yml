@@ -27,6 +27,11 @@ jobs:
         run: |
           source $GITHUB_WORKSPACE/Scripts/InitZeroDreamProject.sh
 
+      - name: Setup Git Config
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+
       - name: Clone Code
         run: |
           git clone https://github.com/zero-dream/ZeroWrt-Firmware-CI.git "$ZD_TempPath/ZeroWrt-Firmware-CI/"
