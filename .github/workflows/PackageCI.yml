@@ -45,8 +45,7 @@ jobs:
 
       - name: Commit And Push Change
         run: |
-          cd "$GITHUB_WORKSPACE"
-          git add .
+          git add "$GITHUB_WORKSPACE"
           # 检查是否有文件变更
           if git diff-index HEAD --quiet --; then
             echo "No changes to commit."
