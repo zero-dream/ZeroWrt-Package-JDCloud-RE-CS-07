@@ -1,0 +1,24 @@
+# 项目 zero-dream/ZeroWrt-Package-CI 专用
+
+name: PackageCI
+
+permissions: write-all
+
+on:
+  # 自动运行: 每天早上 3 点
+  schedule:
+    - cron: 0 19 * * *
+  # 手动运行
+  workflow_dispatch:
+
+env:
+  GITHUB_TOKEN: ${{secrets.GITHUB_TOKEN}}
+
+jobs:
+  auto_clean:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Delete releases and workflows runs
+        if: ${{github.repository}} == 'zero-dream/ZeroWrt-Package-CI'
+        run: |
+          echo '100000'
